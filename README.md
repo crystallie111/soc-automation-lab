@@ -9,6 +9,7 @@ This project showcases the full lifecycle of a modern Security Operations Center
 * **Security Stack**: An integrated suite of open-source tools that work in tandem to detect threats, manage cases, and automate responses.
 
 Below is a high-level architectural diagram of the lab, illustrating the flow of data from the client endpoint to the various cloud-based security platforms. 
+
 ![Diagram of the Home Lab](images/Diagram_Home_Lab.png)
 ---
 
