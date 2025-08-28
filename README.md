@@ -9,7 +9,7 @@ This project showcases the full lifecycle of a modern Security Operations Center
 * **Security Stack**: An integrated suite of open-source tools that work in tandem to detect threats, manage cases, and automate responses.
 
 Below is a high-level architectural diagram of the lab, illustrating the flow of data from the client endpoint to the various cloud-based security platforms. 
-
+![Diagram of the Home Lab](images/Diagram_Home_Lab.png)
 ---
 
 ## Technologies Used
@@ -79,6 +79,8 @@ This section details the steps I took to build and configure the lab to its curr
     * I started the Wazuh agent service (`net start wazuhsvc`).
     * I verified the agent's status as "**Active**" in the Wazuh dashboard and confirmed that security events were being successfully queried.
 
+      ![Wazuh dashboard showing Mimikatz alert](images/wazuh-mimikatz-alert.png)
+
 ### Phase 5: Telemetry Ingestion and Custom Rule Creation
 
 1.  **Wazuh Agent Configuration**:
@@ -98,20 +100,25 @@ This section details the steps I took to build and configure the lab to its curr
     * I identified a stable log field, `originalFileName`, to craft a custom detection rule. This ensures that the rule will not be bypassed even if an attacker renames the Mimikatz executable, a common evasion tactic.
     * I created a custom rule in the `local_rules.xml` file within Wazuh's **Management -> Rules** section. This rule is designed to trigger an alert whenever Mimikatz is detected, regardless of the file's name.
 
+      ![Custom Wazuh rule for Mimikatz detection](images/wazuh-custom-rule.png)
+
 ### Phase 6: SOAR Integration with Shuffle
 
 1.  **Shuffle Workflow Setup**:
     * I created a new workflow in the Shuffle web interface.
     * I added a **Webhook** as the trigger, naming it `Wazuh_Alerts`.
+
+      ![Shuffle workflow diagram](images/shuffle-workflow-diagram.png)
+
     * I copied the unique Webhook URL to use for integration.
     * I ran the Mimikatz executable again on the Windows 11 VM to test the webhook, confirming the alert was successfully received by Shuffle.
 
-2.  **Wazuh Integration**:
+1.  **Wazuh Integration**:
     * I added a new integration to Wazuh's `ossec.conf` file (`nano /var/ossec/etc/ossec.conf`).
     * I configured the integration to send alerts to the `Wazuh_Alerts` Webhook URL copied from Shuffle.
     * I specified the `rule_id` for the Mimikatz rule to ensure only specific alerts are forwarded to the SOAR platform.
 
-3.  **Enrichment with VirusTotal**:
+2.  **Enrichment with VirusTotal**:
     * I added a **Regex Capture Group** action to the Shuffle workflow to extract the SHA256 hash from the Mimikatz alert data. The input data was set to `execution hashes` with a specific regex pattern to capture the hash value.
     * I tested the action and successfully parsed the SHA256 hash.
     * I obtained an API key from VirusTotal.
@@ -119,7 +126,7 @@ This section details the steps I took to build and configure the lab to its curr
     * I provided the API key and set the ID to the captured hash value (`$sha256.group_0.#`).
     * I ran the workflow, confirming that the hash was sent to VirusTotal and the reputation report (which correctly identified it as Mimikatz) was received in Shuffle.
 
-4.  **Automated Alert Creation in TheHive**:
+3.  **Automated Alert Creation in TheHive**:
     * I created a `Service` user and a `Normal` user in TheHive's GUI, with an API key generated for the Service user.
     * I allowed inbound traffic on port 9000 for TheHive's public IP in the DigitalOcean firewall.
     * In Shuffle, I added a **TheHive** action to the workflow.
@@ -127,11 +134,15 @@ This section details the steps I took to build and configure the lab to its curr
     * I configured the **Create alert** action to map relevant fields from the Wazuh alert, such as `Title`, `Tags`, `Description`, `Tlp`, `Severity`, `Type`, `Status`, `Source`, `Sourceref`, and `Pap` (which includes user, process ID, command line, and computer information).
     * I successfully tested the workflow, which created a new alert in TheHive GUI with all the specified details.
 
-5.  **SOC Analyst Email Notification**:
+      ![TheHive alert created by automation](images/thehive-case-creation.png)
+
+4.  **SOC Analyst Email Notification**:
     * I added an **Email** action to the Shuffle workflow, connected to the VirusTotal action.
     * I configured the recipient email and set the subject to `Mimikatz Detected!`.
     * I used dynamic data to populate the email body with key details such as `Time`, `Title`, and `Host`.
     * I successfully tested and received a confirmation email, notifying the analyst of the new alert.
+
+      ![Email notification to the SOC analyst](images/analyst-email-notification.png)
 
 ### Phase 7: Active Response Setup
 
@@ -145,6 +156,8 @@ This section details the steps I took to build and configure the lab to its curr
     * I created the command named `firewall-drop` with a local location, level 5, and no timeout.
     * I restarted the Wazuh manager service.
     * I verified that the active response script was properly registered using `agent_control -L`.
+
+      ![Verification of active response script registration](images/wazuh-active-response-verified.png)
 
 3.  **Shuffle Active Response Workflow**:
     * I added a **Wazuh** application to the Shuffle workflow.
