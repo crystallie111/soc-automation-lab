@@ -24,7 +24,7 @@ Below is a high-level architectural diagram of the lab, illustrating the flow of
 
 ---
 
-## Project Build Log (In Progress)
+## Project Build Log 
 
 This section details the steps I took to build and configure the lab to its current state.
 
