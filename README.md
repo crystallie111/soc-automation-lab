@@ -103,8 +103,8 @@ This section details the steps I took to build and configure the lab to its curr
 
       ![Custom Wazuh rule for Mimikatz detection](images/wazuh-custom-rule.png)
       
-    * By leveraging the originalFileName field from Sysmon telemetry, my rule triggers an alert based on the file's original name, not its current name. This ensures that even if an attacker renames Mimikatz to something else, like lolz.exe, it will still be   detected.
-     As shown in the screenshot below, the system successfully detected the Mimikatz executable even though I renamed it to lolz.exe. This proves the effectiveness of the custom rule.
+    * By leveraging the `originalFileName` field from Sysmon telemetry, my rule triggers an alert based on the file's original name, not its current name. This ensures that even if an attacker renames Mimikatz to something else, like `lolz.exe`, it will still be   detected.
+     As shown in the screenshot below, the system successfully detected the Mimikatz executable even though I renamed it to `lolz.exe`. This proves the effectiveness of the custom rule.
       
       ![Wazuh dashboard detecting Mimikatz alert, when name is changed](images/wazuh-mimikatz-alert.png)
 
